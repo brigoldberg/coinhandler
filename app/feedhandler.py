@@ -9,8 +9,9 @@ from collections import deque
 from prometheus_client import Counter
 from prometheus_client import start_http_server
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from contextlib import asynccontextmanager
+from utils import cli_args, parse_config
 
 def signal_handler(sig, frame):
     logger.info("Exiting feed handler")
@@ -61,9 +62,12 @@ class FeedHandler:
 
         @self.app.get("/health")
         def health_check():
-            """Health check endpoint."""
             logger.debug("Health check performed.")
-            return {"status": "healthy"}
+            """Health check endpoint."""
+            if len(self.queue) > 1:
+                return {"status": "healthy"}
+            else:
+                raise HTTPException(status_code=503, detail="Service not ready")
 
     @asynccontextmanager
     async def lifespan(self, app: FastAPI):
@@ -130,9 +134,12 @@ class FeedHandler:
             await asyncio.gather(*[client.send_text(message) for client in self.connected_clients])
 
 if __name__ == '__main__':
+
+    args = cli_args()
+    config = parse_config(args.cfg_fn, 'feedhandler')
     
     import uvicorn
-    start_http_server(9001)
+    start_http_server(config['prom_exporter_port'])
 
-    solana_fh = FeedHandler('SOL-USD', 'wss://ws-feed.exchange.coinbase.com', 1000)
-    uvicorn.run(solana_fh.app, host='0.0.0.0', port=8001)
+    solana_fh = FeedHandler(config['ticker'], config['feed_uri'], config['queue_size'])
+    uvicorn.run(solana_fh.app, host='0.0.0.0', port=config['subscription_port'])

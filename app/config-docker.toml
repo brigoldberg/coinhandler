@@ -1,0 +1,11 @@
+[feedhandler]
+feed_uri = "wss://ws-feed.exchange.coinbase.com"
+ticker = "SOL-USD"
+queue_size = 1000
+subscription_port = 8001
+prom_exporter_port = 9001
+
+[vwap]
+feed_uri = "ws://fh-sol:8001/subscribe"
+bar_queue_len = 1440
+prom_exporter_port = 9001

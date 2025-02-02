@@ -1,0 +1,34 @@
+services:
+  feedhandler:
+    image: coin:0.1
+    container_name: feedhandler
+    hostname: fh-sol
+    volumes:
+      - ./app:/app
+    command: python3 /app/feedhandler.py -c /app/config-docker.toml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    ports:
+      - 8001:8001
+      - 9001:9001
+
+  vwap:
+    image: coin:0.1
+    container_name: vwap-sol
+    hostname: vwap-sol
+    volumes:
+      - ./app:/app
+    command: python3 /app/vwap.py -c /app/config-docker.toml
+    ports:
+      - 8002:8001
+      - 9002:9001
+    depends_on:
+      feedhandler:
+        condition: service_healthy
+
+networks:
+  default:
+    name: cointrader

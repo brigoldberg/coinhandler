@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import asyncio
 import json
 import logging
@@ -10,6 +9,7 @@ from collections import deque
 from datetime import datetime, timedelta
 from prometheus_client import Counter, Gauge
 from prometheus_client import start_http_server
+from utils import cli_args, parse_config
 
 def signal_handler(sig, frame):
     logger.info("Exiting VWAP client")
@@ -115,7 +115,9 @@ async def receive_data(uri):
 
 if __name__ == '__main__':
 
-    signal.signal(signal.SIGINT, signal_handler)
-    start_http_server(9002)
-    asyncio.run(receive_data(URI))
+    args = cli_args()
+    config = parse_config(args.cfg_fn, 'vwap')
 
+    signal.signal(signal.SIGINT, signal_handler)
+    start_http_server(config['prom_exporter_port'])
+    asyncio.run(receive_data(config['feed_uri']))
