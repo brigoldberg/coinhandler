@@ -65,7 +65,7 @@ class FeedHandler:
             logger.debug("Health check performed.")
             """Health check endpoint."""
             if len(self.queue) > 1:
-                return {"status": "healthy"}
+                return {"status": "feedhandler_healthy"}
             else:
                 raise HTTPException(status_code=503, detail="Service not ready")
 

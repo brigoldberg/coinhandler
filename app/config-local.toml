@@ -7,5 +7,6 @@ prom_exporter_port = 9001
 
 [vwap]
 feed_uri = "ws://localhost:8001/subscribe"
+subscription_port = 8002
 bar_queue_len = 1440
 prom_exporter_port = 9002
